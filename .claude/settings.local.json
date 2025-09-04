@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose restart:*)",
+      "Bash(docker cp:*)",
+      "Bash(docker-compose:*)",
+      "Bash(timeout:*)",
+      "Bash(docker exec:*)",
+      "Bash(python:*)",
+      "Bash(DATABASE_URL=\"postgresql://admin:password@localhost:5432/paperdb\" REDIS_URL=\"redis://localhost:6379\" python openalex_fetcher.py)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

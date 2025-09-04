@@ -1,0 +1,323 @@
+/* 전체 스타일 */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 헤더 스타일 */
+header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* 카드 스타일 */
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* 검색 결과 카드 */
+.paper-card {
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.paper-card .card-body {
+    padding: 1.5rem;
+}
+
+.paper-title {
+    color: #007bff;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.paper-authors {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.paper-abstract {
+    color: #495057;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.paper-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.similarity-score {
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.similarity-high {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.similarity-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.similarity-low {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 카테고리 배지 */
+.category-badge {
+    font-size: 0.7rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* 개념 배지 */
+.concept-badge {
+    font-size: 0.7rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* 소스 정보 */
+.source-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* 인용 정보 */
+.citation-info {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* 모달 메타데이터 스타일 */
+#modalMetadata {
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+#modalMetadata p {
+    margin-bottom: 0.5rem;
+}
+
+#modalMetadata code {
+    font-size: 0.8rem;
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+#modalMetadata strong {
+    color: #495057;
+}
+
+/* 고급 검색 옵션 스타일 */
+#advancedOptions {
+    background-color: #f8f9fa;
+}
+
+#advancedOptions .form-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+/* 폼 스타일 */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* 슬라이더 스타일 */
+.form-range::-webkit-slider-thumb {
+    background-color: #007bff;
+}
+
+.form-range::-moz-range-thumb {
+    background-color: #007bff;
+    border: none;
+}
+
+/* 로딩 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .paper-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* 강조 텍스트 */
+.highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* 상태 배지 */
+.status-online {
+    background-color: #28a745 !important;
+}
+
+.status-offline {
+    background-color: #dc3545 !important;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* 그래프 시각화 스타일 */
+#networkGraph {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+/* 논문 리스트 컴팩트 카드 스타일 */
+.paper-card-compact {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+}
+
+.paper-card-compact:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+    transform: translateY(-1px);
+}
+
+.paper-card-compact.selected {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.paper-card-compact .paper-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.paper-card-compact .paper-authors {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.paper-card-compact .paper-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+}
+
+.paper-card-compact .similarity-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+}
+
+/* 유사도 슬라이더 스타일 */
+#similarityThreshold {
+    accent-color: #007bff;
+}
+
+/* 그래프 로딩 스타일 */
+#graphLoading {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* PDF 버튼 스타일 */
+.pdf-btn, .pdf-btn-compact {
+    transition: all 0.2s ease;
+}
+
+.pdf-btn:hover, .pdf-btn-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.pdf-btn-compact {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+
+/* 논문 카드 버튼 영역 */
+.paper-card .border-top {
+    border-color: #e9ecef !important;
+}
+
+/* 컴팩트 카드의 메타 영역 개선 */
+.paper-card-compact .paper-meta {
+    margin-top: 8px;
+}

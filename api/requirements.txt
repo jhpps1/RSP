@@ -1,0 +1,27 @@
+# FastAPI 및 서버
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.4.2
+
+# 데이터베이스
+asyncpg==0.29.0
+pgvector==0.2.0
+psycopg2-binary==2.9.7
+
+# 캐싱
+redis==5.0.1
+aioredis==2.0.1
+
+# 머신러닝
+torch==2.1.0
+transformers==4.35.0
+sentence-transformers==2.2.2
+numpy==1.24.3
+
+# 데이터 처리
+pandas==2.1.1
+
+# 유틸리티
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
