@@ -133,7 +133,6 @@ class PDFResponse(BaseModel):
     """PDF 응답 모델"""
     doi: str
     pdf_url: Optional[str] = None
-    scihub_url: Optional[str] = None
     available: bool
     source: Optional[str] = None
     message: Optional[str] = None

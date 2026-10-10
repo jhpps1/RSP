@@ -1,6 +1,6 @@
 # Paper Similarity Search System
 
-AI/ML 논문 벡터 검색 및 유사도 시각화 시스템입니다. OpenAlex API와 Sci-Hub를 연동하여 논문 데이터를 수집하고, 의미론적 검색과 그래프 기반 관계 시각화를 제공합니다.
+AI/ML 논문 벡터 검색과 유사도 그래프 UI다. 논문 수집은 하지 않는다. 수집·임베딩은 [auto_collecting_paper](https://github.com/jhpps1/auto_collecting_paper)가 같은 PostgreSQL `paperdb`에 쓰고, 이 API는 그 `papers` 테이블을 읽는다. 두 프로세스는 서로를 호출하지 않는다.
 
 ## 🌟 주요 기능
 
@@ -15,15 +15,13 @@ AI/ML 논문 벡터 검색 및 유사도 시각화 시스템입니다. OpenAlex 
 - **유사도 연결**: 0.4 이상 유사도 기준으로 논문 간 관계 표시
 - **인터랙티브**: 노드 클릭, 확대/축소, 드래그 등 다양한 상호작용
 
-### 3. PDF 접근 시스템
-- **다중 소스**: OpenAlex 직접 링크 + Sci-Hub 자동 fallback
-- **스마트 라우팅**: Open Access 우선, Closed Access는 Sci-Hub 연동
-- **다중 미러**: 8개 Sci-Hub 미러 도메인으로 안정성 확보
+### 3. PDF 접근
+- 저장된 OpenAlex `open_access.oa_url`만 연다
+- 그 링크가 없으면 PDF를 찾지 않는다
 
-### 4. 대용량 데이터
-- **1,119개 논문**: AI/ML 분야 고품질 논문 컬렉션
-- **30개 카테고리**: Deep Learning, NLP, Computer Vision 등 세분화
-- **실시간 확장**: OpenAlex API를 통한 지속적 데이터 업데이트
+### 4. 데이터
+- 스키마와 임베딩이 없는 샘플 3건은 `init.sql`에 있다. 벡터 검색(`embedding IS NOT NULL`)에는 나오지 않는다
+- 검색에 쓰려면 수집 저장소가 같은 DB에 논문을 넣고 `all-MiniLM-L6-v2` 임베딩을 채워야 한다
 
 ## 🏗️ 시스템 아키텍처
 
@@ -39,13 +37,9 @@ AI/ML 논문 벡터 검색 및 유사도 시각화 시스템입니다. OpenAlex 
          └──────────────│     Cache       │──────────────┘
                         │                 │
                         └─────────────────┘
-                                 │
-                        ┌─────────────────┐
-                        │   External APIs │
-                        │   - OpenAlex    │
-                        │   - Sci-Hub     │
-                        └─────────────────┘
 ```
+
+수집 프로세스는 이 그림 밖에 있다. OpenAlex를 호출해 `paperdb`에 쓰고 끝난다.
 
 ### 핵심 컴포넌트
 
@@ -57,16 +51,14 @@ AI/ML 논문 벡터 검색 및 유사도 시각화 시스템입니다. OpenAlex 
 #### Backend (api/)
 - **main.py**: FastAPI 애플리케이션, CORS, 라우팅
 - **search.py**: 벡터 검색, 유사도 계산, 그래프 데이터 생성
-- **embedder.py**: SentenceTransformers 임베딩 생성
-- **scihub_client.py**: Sci-Hub 다중 미러 클라이언트
-- **openalex_fetcher.py**: OpenAlex API 데이터 수집
+- **embedder.py**: 질의 문장을 `all-MiniLM-L6-v2`(384차원)로 임베딩
 - **database.py**: PostgreSQL + Redis 연결 관리
 
 ## 🚀 기술 스택
 
 ### Backend
 - **FastAPI**: 고성능 Python 웹 프레임워크
-- **PostgreSQL 15**: 벡터 검색을 위한 pgvector 확장
+- **PostgreSQL 16**: `pgvector/pgvector:pg16`
 - **Redis**: 검색 결과 캐싱, 세션 관리
 - **SentenceTransformers**: all-MiniLM-L6-v2 임베딩 모델
 - **asyncpg**: 비동기 PostgreSQL 드라이버
@@ -78,13 +70,8 @@ AI/ML 논문 벡터 검색 및 유사도 시각화 시스템입니다. OpenAlex 
 - **Axios**: HTTP 클라이언트
 - **Font Awesome**: 아이콘 세트
 
-### External APIs
-- **OpenAlex**: 학술 논문 메타데이터
-- **Sci-Hub**: PDF 원문 접근 (8개 미러)
-
 ### DevOps
-- **Docker Compose**: 마이크로서비스 오케스트레이션
-- **Nginx**: 리버스 프록시, 정적 파일 서빙
+- **Docker Compose**: postgres, redis, api, web을 한 번에 기동
 - **uvicorn**: ASGI 서버
 
 ## 📦 설치 및 실행
@@ -118,15 +105,16 @@ docker-compose up -d
 
 # 로그 확인
 docker-compose logs -f api
-
-# 초기 데이터 로딩 (선택사항)
-docker-compose exec api python openalex_fetcher.py
 ```
 
+논문 행과 임베딩은 이 저장소가 만들지 않는다. `auto_collecting_paper`를 같은 `paperdb`에 연결해 수집한 뒤 `embedding_generator.py`를 실행한다. 두 저장소의 DB 이름, 계정, 임베딩 모델은 `.env.example` 기준으로 같다.
+
 ### 5. 서비스 확인
-- **웹 인터페이스**: http://localhost
+- **웹 인터페이스**: http://localhost:3000
 - **API 문서**: http://localhost:8000/docs
 - **헬스체크**: http://localhost:8000/health
+
+호스트 포트 기본값은 Postgres `5433`, Redis `6380`이다. 컨테이너 안에서는 각각 `5432`, `6379`다. `.env.example`을 본다.
 
 ## 📚 API 문서
 
@@ -194,29 +182,15 @@ Content-Type: application/json
 - **엣지 굵기**: 유사도에 비례
 - **유사도 슬라이더**: 연결 임계값 조정 (0.4~1.0)
 
-### 3. PDF 다운로드
-- **Open Access**: 직접 다운로드
-- **Closed Access**: Sci-Hub 자동 검색
-- **실패시**: Sci-Hub 웹사이트 연결
+### 3. PDF
+- 논문에 `pdf_url`이 있으면 그 주소를 연다
+- 없으면 원문을 다른 곳에서 찾지 않는다
 
-## 📊 성능 지표
+## 데이터
 
-### 데이터 규모
-- **총 논문 수**: 1,119개
-- **카테고리**: 30개 AI/ML 분야
-- **평균 인용 수**: 85회
-- **벡터 차원**: 384차원
-
-### 응답 성능
-- **검색 응답**: 평균 200ms
-- **그래프 생성**: 평균 500ms
-- **PDF 검색**: 평균 2-5초 (Sci-Hub 의존)
-- **임베딩 생성**: 논문당 50ms
-
-### 시스템 리소스
-- **RAM 사용량**: 약 2GB (임베딩 모델 포함)
-- **디스크 사용량**: 약 500MB (논문 메타데이터)
-- **네트워크**: OpenAlex + Sci-Hub API 호출
+- 벡터 차원은 384다. 모델은 `all-MiniLM-L6-v2`
+- 논문 수, 응답 시간, 메모리 사용량은 이 저장소에 측정값이 없다
+- HNSW 인덱스 생성문은 `init.sql`에 주석으로만 있다. 기본 기동은 그 인덱스를 만들지 않는다
 
 ## 🛠️ 개발 가이드
 
@@ -238,15 +212,8 @@ python main.py
 ```
 
 ### 새로운 논문 추가
-```bash
-# OpenAlex에서 특정 키워드 논문 수집
-docker-compose exec api python -c "
-from openalex_fetcher import OpenAlexFetcher
-fetcher = OpenAlexFetcher()
-papers = fetcher.fetch_papers_by_keywords(['quantum computing'], max_results=50)
-print(f'Found {len(papers)} papers')
-"
-```
+
+수집 저장소에서 같은 DB로 `full_openalex_collector.py`와 `embedding_generator.py`를 실행한다. 이 API 이미지에는 수집기가 들어 있지 않다.
 
 ### 데이터베이스 스키마
 ```sql
@@ -268,13 +235,20 @@ CREATE TABLE papers (
     open_access_status TEXT,
     pdf_url TEXT,
     paper_source TEXT DEFAULT 'openalex',
+    full_text TEXT,
+    grobid_data JSONB,
+    grobid_status TEXT,
+    keywords TEXT,
     embedding vector(384),
+    embedding_model TEXT,
+    embedding_generated_at TIMESTAMP,
+    updated_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 벡터 검색 인덱스
-CREATE INDEX papers_embedding_idx ON papers 
-USING ivfflat (embedding vector_cosine_ops);
+-- HNSW 인덱스는 init.sql에 주석으로만 있다.
+-- CREATE INDEX papers_embedding_idx ON papers
+-- USING hnsw (embedding vector_cosine_ops);
 ```
 
 
@@ -302,10 +276,9 @@ docker-compose logs api
 # F12 > Network 탭
 ```
 
-#### 3. PDF 다운로드 실패
-- Sci-Hub 미러 상태 확인 (일부 미러는 일시적 차단 가능)
-- DOI 형식 확인
-- 네트워크 연결 상태 확인
+#### 3. PDF 링크가 없음
+- 그 논문 행의 `pdf_url`이 비어 있으면 API는 링크를 만들지 않는다
+- 수집기가 OpenAlex OA 주소를 저장했는지 확인한다
 
 #### 4. 검색 결과 없음
 - 검색어를 영어로 입력
@@ -323,11 +296,7 @@ CREATE INDEX papers_concepts_idx ON papers USING gin(concepts);
 ```
 
 #### 2. 메모리 사용량 줄이기
-```python
-# api/embedder.py에서 모델 크기 조정
-model_name = "all-MiniLM-L6-v2"  # 현재 (80MB)
-# model_name = "all-distilroberta-v1"  # 대안 (290MB, 더 정확)
-```
+`papers.embedding`은 `VECTOR(384)`다. `EMBEDDING_MODEL`을 바꿀 때는 수집기와 조회 서버가 같은 384차원 모델이어야 한다.
 
 ## 🚀 향후 계획
 
@@ -353,7 +322,6 @@ model_name = "all-MiniLM-L6-v2"  # 현재 (80MB)
 
 ### 기술 문의
 - 이슈 등록: GitHub Issues
-- 개발 문서: `/docs` 디렉토리
 - API 문서: http://localhost:8000/docs
 
 ### 기여하기
@@ -369,10 +337,9 @@ model_name = "all-MiniLM-L6-v2"  # 현재 (80MB)
 ## 🙏 감사의 글
 
 - **OpenAlex**: 오픈 학술 데이터 제공
-- **Sci-Hub**: 학술 논문 접근성 향상
 - **SentenceTransformers**: 임베딩 모델 제공
 - **Vis.js**: 그래프 시각화 라이브러리
 
 ---
 
-*마지막 업데이트: 2025-09-04*
+*스키마와 실행 설명은 현재 compose, `init.sql`, 수집 저장소와 맞춘 상태다.*

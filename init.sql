@@ -21,7 +21,14 @@ CREATE TABLE papers (
     open_access_status VARCHAR(20),
     concepts TEXT[],
     paper_source VARCHAR(20) DEFAULT 'arxiv',  -- 'arxiv' or 'openalex'
-    embedding VECTOR(384),  -- all-MiniLM-L6-v2 모델 차원
+    full_text TEXT,
+    grobid_data JSONB,
+    grobid_status TEXT,
+    keywords TEXT,
+    embedding VECTOR(384),  -- all-MiniLM-L6-v2
+    embedding_model TEXT,
+    embedding_generated_at TIMESTAMP,
+    updated_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     
     UNIQUE(arxiv_id),

@@ -1,3 +1,4 @@
+import os
 import torch
 from sentence_transformers import SentenceTransformer
 import numpy as np
@@ -12,7 +13,9 @@ logger = logging.getLogger(__name__)
 class PaperEmbedder:
     """논문 임베딩 생성 클래스"""
     
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, model_name: str = None):
+        if not model_name:
+            model_name = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
         """
         임베딩 모델 초기화
         

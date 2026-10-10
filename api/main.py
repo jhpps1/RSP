@@ -13,7 +13,6 @@ from models import (SearchRequest, SearchResponse, Paper, SimilarRequest,
 from database import get_db_pool, get_redis_client
 from embedder import PaperEmbedder
 from search import SearchService
-from scihub_client import SciHubClient
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -22,21 +21,17 @@ logger = logging.getLogger(__name__)
 # 글로벌 객체들
 embedder = None
 search_service = None
-scihub_client = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """애플리케이션 시작/종료 시 실행되는 함수"""
-    global embedder, search_service, scihub_client
+    global embedder, search_service
     
     # 시작 시
     logger.info("Starting Paper Search API...")
     
     # 임베딩 모델 초기화
     embedder = PaperEmbedder()
-    
-    # Sci-Hub 클라이언트 초기화
-    scihub_client = SciHubClient()
     
     # 검색 서비스 초기화
     db_pool = await get_db_pool()
@@ -151,33 +146,28 @@ async def get_search_stats():
 
 @app.post("/pdf", response_model=PDFResponse)
 async def get_pdf_url(request: PDFRequest):
-    """DOI를 통한 PDF URL 획득 (Sci-Hub)"""
+    """저장된 OpenAlex OA 링크만 돌려준다."""
     try:
         if not request.doi:
             raise HTTPException(status_code=400, detail="DOI is required")
-        
-        # Sci-Hub에서 PDF URL 가져오기
-        pdf_info = scihub_client.get_pdf_url(request.doi)
-        
-        if pdf_info:
+
+        paper = await search_service.get_paper_by_id(request.doi)
+        pdf_url = paper.pdf_url if paper else None
+        if pdf_url:
             return PDFResponse(
                 doi=request.doi,
-                pdf_url=pdf_info['pdf_url'],
-                scihub_url=f"https://sci-hub.se/{request.doi}",
+                pdf_url=pdf_url,
                 available=True,
-                source=pdf_info.get('source', 'scihub'),
-                message="PDF available"
+                source="openalex",
+                message="OpenAlex OA link"
             )
-        else:
-            return PDFResponse(
-                doi=request.doi,
-                pdf_url=None,
-                scihub_url=f"https://sci-hub.se/{request.doi}",
-                available=False,
-                source=None,
-                message="PDF not found"
-            )
-            
+        return PDFResponse(
+            doi=request.doi,
+            pdf_url=None,
+            available=False,
+            source=None,
+            message="OpenAlex OA link is not stored for this paper"
+        )
     except Exception as e:
         logger.error(f"PDF request failed: {e}")
         raise HTTPException(status_code=500, detail=f"PDF request failed: {str(e)}")
@@ -255,18 +245,7 @@ async def get_paper_pdf(paper_id: str):
             else:
                 raise HTTPException(status_code=404, detail="DOI not available for this paper")
         
-        # Closed Access 또는 PDF 링크가 없는 경우 Sci-Hub에서 시도
-        pdf_info = scihub_client.get_pdf_url(doi)
-        
-        if pdf_info:
-            return {
-                "pdf_url": pdf_info['pdf_url'],
-                "scihub_url": f"https://sci-hub.se/{doi}",
-                "source": pdf_info.get('source', 'scihub'),
-                "available": True
-            }
-        else:
-            raise HTTPException(status_code=404, detail="PDF not available")
+        raise HTTPException(status_code=404, detail="OpenAlex OA link is not stored for this paper")
             
     except HTTPException:
         raise

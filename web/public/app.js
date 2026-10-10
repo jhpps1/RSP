@@ -480,12 +480,6 @@ function showPaperModal(paper) {
         modalPaperLink.href = paper.pdf_url;
         modalPaperLink.style.display = 'inline-block';
         modalPaperLink.innerHTML = '<i class="fas fa-file-pdf me-1"></i>PDF 보기';
-    } else if (paper.doi) {
-        // DOI가 있으면 Sci-Hub 링크로 연결 시도
-        modalPaperLink.href = '#';
-        modalPaperLink.style.display = 'inline-block';
-        modalPaperLink.innerHTML = '<i class="fas fa-download me-1"></i>PDF 다운로드';
-        modalPaperLink.onclick = () => openPDFFromDOI(paper.doi);
     } else {
         modalPaperLink.style.display = 'none';
     }
@@ -507,13 +501,11 @@ async function openPDFFromDOI(doi) {
         if (pdfData.available && pdfData.pdf_url) {
             window.open(pdfData.pdf_url, '_blank');
         } else {
-            // Sci-Hub URL로 리다이렉트
-            window.open(`https://sci-hub.se/${doi}`, '_blank');
+            showToast('OpenAlex 공개 PDF 링크가 없습니다.', 'warning');
         }
     } catch (error) {
         console.error('PDF fetch failed:', error);
-        // 실패시 직접 Sci-Hub로
-        window.open(`https://sci-hub.se/${doi}`, '_blank');
+        showToast('PDF 링크를 가져오지 못했습니다.', 'danger');
     }
 }
 
@@ -572,10 +564,7 @@ async function downloadPDFDirect(paper, buttonElement) {
             return;
         }
         
-        // 2. DOI를 통한 Sci-Hub 검색
         if (paper.doi) {
-            showToast('Sci-Hub에서 PDF를 검색 중입니다...', 'info');
-            
             const response = await axios.post(`${API_BASE_URL}/pdf`, {
                 doi: paper.doi
             });
@@ -583,11 +572,9 @@ async function downloadPDFDirect(paper, buttonElement) {
             const pdfData = response.data;
             if (pdfData.available && pdfData.pdf_url) {
                 window.open(pdfData.pdf_url, '_blank');
-                showToast('Sci-Hub에서 PDF를 찾았습니다!', 'success');
+                showToast('OpenAlex 공개 PDF를 열었습니다.', 'success');
             } else {
-                // API에서 찾지 못한 경우 직접 Sci-Hub로
-                window.open(`https://sci-hub.se/${paper.doi}`, '_blank');
-                showToast('Sci-Hub 웹사이트로 이동합니다.', 'warning');
+                showToast('OpenAlex 공개 PDF 링크가 없습니다.', 'warning');
             }
         } else if (paper.pdf_url) {
             // DOI는 없지만 PDF URL이 있는 경우
@@ -601,13 +588,7 @@ async function downloadPDFDirect(paper, buttonElement) {
     } catch (error) {
         console.error('PDF download failed:', error);
         
-        // 에러 발생 시 Sci-Hub 직접 시도
-        if (paper.doi) {
-            window.open(`https://sci-hub.se/${paper.doi}`, '_blank');
-            showToast('연결 오류가 발생하여 Sci-Hub 웹사이트로 이동합니다.', 'warning');
-        } else {
-            showToast('PDF 다운로드에 실패했습니다. 나중에 다시 시도해주세요.', 'danger');
-        }
+        showToast('PDF 링크를 가져오지 못했습니다.', 'danger');
         
     } finally {
         // 버튼을 원래 상태로 복원
