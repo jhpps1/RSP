@@ -5,9 +5,9 @@ AI/ML 논문 벡터 검색과 유사도 그래프 UI다. 논문 수집은 하지
 ## 🌟 주요 기능
 
 ### 1. 지능형 논문 검색
-- **의미론적 검색**: SentenceTransformers 기반 벡터 유사도 검색
-- **고급 필터링**: 인용 수, 발행 연도, 저널명, Open Access 상태 등
-- **실시간 검색**: 빠른 응답 시간과 정확한 결과 제공
+- **의미론적 검색**: 질의 문장을 `all-MiniLM-L6-v2`로 임베딩하고, pgvector 코사인 거리로 `papers.embedding`을 찾는다
+- **필터**: 인용 수, 발행 연도, 저널명, Open Access 상태
+- 응답 시간 측정값은 이 저장소에 없다
 
 ### 2. 마인드맵 시각화
 - **분할 레이아웃**: 왼쪽 25% 논문 목록, 오른쪽 75% 관계 그래프
@@ -59,10 +59,10 @@ AI/ML 논문 벡터 검색과 유사도 그래프 UI다. 논문 수집은 하지
 ### Backend
 - **FastAPI**: 고성능 Python 웹 프레임워크
 - **PostgreSQL 16**: `pgvector/pgvector:pg16`
-- **Redis**: 검색 결과 캐싱, 세션 관리
+- **Redis**: 검색 결과 캐시
 - **SentenceTransformers**: all-MiniLM-L6-v2 임베딩 모델
 - **asyncpg**: 비동기 PostgreSQL 드라이버
-- **aioredis**: 비동기 Redis 클라이언트
+- **redis.asyncio**: 비동기 Redis 클라이언트. `requirements.txt`의 `aioredis`는 API 코드에서 쓰지 않는다
 
 ### Frontend
 - **Vis.js Network**: 고성능 그래프 시각화
@@ -85,8 +85,8 @@ AI/ML 논문 벡터 검색과 유사도 그래프 UI다. 논문 수집은 하지
 
 ### 2. 프로젝트 클론
 ```bash
-git clone <repository-url>
-cd similarity
+git clone https://github.com/jhpps1/RSP.git
+cd RSP
 ```
 
 ### 3. 환경 설정
@@ -126,9 +126,11 @@ Content-Type: application/json
 {
   "query": "deep learning transformer",
   "limit": 20,
-  "similarity_threshold": 0.7
+  "similarity_threshold": 0.5
 }
 ```
+
+검색과 그래프 요청의 기본 `similarity_threshold`는 0.5다. 그래프 간선은 요청값과 별도로 0.4를 쓴다.
 
 ### 그래프 데이터
 ```http
@@ -138,7 +140,7 @@ Content-Type: application/json
 {
   "query": "neural network",
   "limit": 50,
-  "similarity_threshold": 0.6
+  "similarity_threshold": 0.5
 }
 ```
 
@@ -297,26 +299,6 @@ CREATE INDEX papers_concepts_idx ON papers USING gin(concepts);
 
 #### 2. 메모리 사용량 줄이기
 `papers.embedding`은 `VECTOR(384)`다. `EMBEDDING_MODEL`을 바꿀 때는 수집기와 조회 서버가 같은 384차원 모델이어야 한다.
-
-## 🚀 향후 계획
-
-### 단기 목표 (1-2개월)
-- [ ] 실시간 검색 자동완성
-- [ ] 논문 즐겨찾기 기능
-- [ ] 검색 기록 저장
-- [ ] 모바일 최적화
-
-### 중기 목표 (3-6개월)
-- [ ] 다국어 지원 (한국어 논문 포함)
-- [ ] 인용 관계 그래프
-- [ ] 논문 요약 AI
-- [ ] 사용자 계정 시스템
-
-### 장기 목표 (6-12개월)
-- [ ] arXiv 실시간 동기화
-- [ ] 협업 논문 추천
-- [ ] 연구 트렌드 분석
-- [ ] 논문 품질 평가 AI
 
 ## 📞 지원 및 문의
 
